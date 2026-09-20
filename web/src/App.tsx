@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Audit from "./Audit";
 import Keys from "./Keys";
 import { signIn, signOut, useSession } from "./lib/auth-client";
 import { trpc } from "./lib/trpc";
@@ -194,8 +195,10 @@ export default function App() {
       )}
       <ConnectCard />
       <Keys />
+      <Audit />
       <p className="mt-6 text-xs text-neutral-500">
-        Calendar proxy + agent skill land in Phase 4–5.
+        Agent docs: <a className="underline" href="/skill.md">SKILL.md</a> ·{" "}
+        <a className="underline" href="/api/openapi.json">openapi.json</a>
       </p>
     </main>
   );

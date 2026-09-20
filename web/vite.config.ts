@@ -9,6 +9,7 @@ export default defineConfig({
     proxy: {
       "/api": "http://localhost:8787",
       "/trpc": "http://localhost:8787",
+      "/skill.md": "http://localhost:8787",
     },
   },
 });

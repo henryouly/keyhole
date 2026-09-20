@@ -1,8 +1,8 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import superjson from "superjson";
 import { z } from "zod";
-import { connectedAccounts } from "../db/app-schema.js";
+import { auditLogs, connectedAccounts } from "../db/app-schema.js";
 import { getDb } from "../db/client.js";
 import { auth } from "../lib/auth.js";
 import { adminEmails } from "../lib/env.js";
@@ -129,6 +129,26 @@ export const appRouter = router({
         );
         if (!ok) throw new TRPCError({ code: "NOT_FOUND", message: "No such key" });
         return { ok: true };
+      }),
+  }),
+  // Recent agent calls, metadata only. Pruned to 10k rows on write.
+  audit: router({
+    recent: adminProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(100).default(25) }))
+      .query(async ({ ctx, input }) => {
+        return getDb()
+          .select({
+            apiKeyPrefix: auditLogs.apiKeyPrefix,
+            method: auditLogs.method,
+            path: auditLogs.path,
+            status: auditLogs.status,
+            ms: auditLogs.ms,
+            createdAt: auditLogs.createdAt,
+          })
+          .from(auditLogs)
+          .where(eq(auditLogs.userId, ctx.session!.user.id))
+          .orderBy(desc(auditLogs.createdAt))
+          .limit(input.limit);
       }),
   }),
 });
