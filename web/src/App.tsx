@@ -5,20 +5,110 @@ import { trpc } from "./lib/trpc";
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
   unable_to_create_user:
     "This Google account is not authorized for Keyhole. Only the allowlisted admin account may sign in.",
+  forbidden: "You must be signed in as the admin to do that.",
+  oauth_disabled:
+    "Google connect is disabled on this deployment (preview isolation).",
+  no_refresh_token:
+    "Google did not return a refresh token. Remove Keyhole access at myaccount.google.com/permissions, then reconnect.",
+  exchange_failed: "Token exchange with Google failed. Please retry.",
+  bad_state: "OAuth state check failed (stale or tampered request). Retry.",
+  missing_params: "OAuth callback was missing parameters. Retry.",
+  google_access_denied: "You denied the Google consent screen. Reconnect to grant access.",
 };
 
-function useAuthError(): string | null {
-  const [error] = useState(() => {
-    const code = new URLSearchParams(window.location.search).get("error");
-    if (code) window.history.replaceState(null, "", window.location.pathname);
-    return code;
+function useQueryParams(): { error: string | null; connected: string | null } {
+  const [params] = useState(() => {
+    const q = new URLSearchParams(window.location.search);
+    const out = { error: q.get("error"), connected: q.get("connected") };
+    if (out.error || out.connected) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+    return out;
   });
-  return error;
+  return params;
+}
+
+type ConnectionStatus =
+  | { connected: false }
+  | {
+      connected: true;
+      provider: string;
+      accountEmail: string | null;
+      scopes: string | null;
+      expiresAt: Date | null;
+    };
+
+function ConnectCard() {
+  const [status, setStatus] = useState<ConnectionStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = () => {
+    setError(null);
+    trpc.connection.status
+      .query()
+      .then(setStatus)
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : String(e)),
+      );
+  };
+
+  useEffect(refresh, []);
+
+  const disconnect = () => {
+    setBusy(true);
+    trpc.connection.disconnect
+      .mutate()
+      .then(refresh)
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : String(e)),
+      )
+      .finally(() => setBusy(false));
+  };
+
+  return (
+    <section className="mt-6 rounded border p-4">
+      <h2 className="font-semibold">Google Calendar connection</h2>
+      {status === null && !error && (
+        <p className="mt-2 text-sm text-neutral-600">Loading…</p>
+      )}
+      {error && (
+        <p className="mt-2 rounded bg-red-100 p-2 text-xs text-red-900">
+          {error}
+        </p>
+      )}
+      {status && !status.connected && (
+        <div className="mt-2">
+          <p className="text-sm text-neutral-600">Not connected.</p>
+          <a
+            className="mt-2 inline-block rounded bg-black px-4 py-2 text-sm text-white"
+            href="/api/oauth/google/start"
+          >
+            Connect Google Calendar
+          </a>
+        </div>
+      )}
+      {status?.connected && (
+        <div className="mt-2 text-sm">
+          <p>
+            Connected{status.accountEmail ? ` as ${status.accountEmail}` : ""}.
+          </p>
+          <button
+            className="mt-2 rounded border px-4 py-2 text-sm disabled:opacity-50"
+            disabled={busy}
+            onClick={disconnect}
+          >
+            {busy ? "Disconnecting…" : "Disconnect"}
+          </button>
+        </div>
+      )}
+    </section>
+  );
 }
 
 export default function App() {
   const { data: session, isPending } = useSession();
-  const authError = useAuthError();
+  const { error: authError, connected } = useQueryParams();
   const [viewer, setViewer] = useState<{ email: string; name: string } | null>(
     null,
   );
@@ -91,8 +181,19 @@ export default function App() {
           Sign out
         </button>
       </div>
+      {connected && (
+        <p className="mt-4 rounded bg-green-100 p-4 text-xs text-green-900">
+          Connected to {connected}. Tokens are encrypted and never shown.
+        </p>
+      )}
+      {authError && (
+        <p className="mt-4 rounded bg-red-100 p-4 text-xs text-red-900">
+          {AUTH_ERROR_MESSAGES[authError] ?? `Unknown error (${authError}).`}
+        </p>
+      )}
+      <ConnectCard />
       <p className="mt-6 text-xs text-neutral-500">
-        Dashboard (connections, keys, audit) lands in Phase 3–5.
+        API keys + audit land in Phase 3–5.
       </p>
     </main>
   );

@@ -15,6 +15,8 @@ const envSchema = z.object({
   DATA_ENCRYPTION_KEY: z.string().default(""),
   ADMIN_EMAILS: z.string().default(""),
   APP_URL: z.string().default("http://localhost:8787"),
+  /** Canonical prod URL. OAuth is disabled on any other non-localhost APP_URL. */
+  PROD_APP_URL: z.string().default(""),
   API_PORT: z.coerce.number().default(8787),
 });
 
