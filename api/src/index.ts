@@ -7,10 +7,11 @@ import { appRouter, createContext } from "./trpc/router.js";
 // Extension points (later phases):
 // - /api/v1/* → agent REST, Bearer kh_live_* gate (Phase 3)
 import oauth from "./rest/oauth.js";
+import v1 from "./rest/v1.js";
 const app = new Hono();
 
 app.get("/api/health", (c) => {
-  return c.json({ ok: true, service: "keyhole-api", phase: 2 });
+  return c.json({ ok: true, service: "keyhole-api", phase: 3 });
 });
 
 // better-auth: login, callback, session, sign-out.
@@ -18,6 +19,9 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 // Google data-connect OAuth (admin session + prod gate inside).
 app.route("/api/oauth", oauth);
+
+// Agent API (Bearer kh_live_* gate + audit inside).
+app.route("/api/v1", v1);
 
 // Admin tRPC (better-auth cookie gate inside adminProcedure).
 app.use("/trpc/*", (c) =>

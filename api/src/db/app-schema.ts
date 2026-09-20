@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema.js";
 
 /** Keyhole app tables. Google data-connect tokens are encrypted blobs. */
@@ -39,13 +39,17 @@ export const apiKeys = pgTable("api_keys", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const auditLogs = pgTable("audit_logs", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
-  apiKeyPrefix: text("api_key_prefix"),
-  method: text("method").notNull(),
-  path: text("path").notNull(),
-  status: integer("status").notNull(),
-  ms: integer("ms"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const auditLogs = pgTable(
+  "audit_logs",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+    apiKeyPrefix: text("api_key_prefix"),
+    method: text("method").notNull(),
+    path: text("path").notNull(),
+    status: integer("status").notNull(),
+    ms: integer("ms"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("audit_logs_created_at_idx").on(t.createdAt)],
+);

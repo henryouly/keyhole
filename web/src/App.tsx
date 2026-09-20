@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Keys from "./Keys";
 import { signIn, signOut, useSession } from "./lib/auth-client";
 import { trpc } from "./lib/trpc";
 
@@ -192,8 +193,9 @@ export default function App() {
         </p>
       )}
       <ConnectCard />
+      <Keys />
       <p className="mt-6 text-xs text-neutral-500">
-        API keys + audit land in Phase 3–5.
+        Calendar proxy + agent skill land in Phase 4–5.
       </p>
     </main>
   );

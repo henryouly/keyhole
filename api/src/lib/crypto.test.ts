@@ -15,8 +15,9 @@ describe("token crypto", () => {
   it("rejects tampered blobs", () => {
     const blob = encryptToken(SAMPLE);
     const [iv, tag, ct] = blob.split(".");
-    const tamperedCt =
-      ct.slice(0, -1) + (ct.endsWith("A") ? "B" : "A");
+    // Flip a bit in the first char: always a data bit, unlike the last char
+    // whose low bits may be base64 padding.
+    const tamperedCt = (ct.startsWith("A") ? "B" : "A") + ct.slice(1);
     expect(() => decryptToken(`${iv}.${tag}.${tamperedCt}`)).toThrow();
   });
 

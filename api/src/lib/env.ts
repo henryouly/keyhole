@@ -17,6 +17,8 @@ const envSchema = z.object({
   APP_URL: z.string().default("http://localhost:8787"),
   /** Canonical prod URL. OAuth is disabled on any other non-localhost APP_URL. */
   PROD_APP_URL: z.string().default(""),
+  /** Per-key daily request quota for /api/v1/*. 429 past this. */
+  API_KEY_DAILY_LIMIT: z.coerce.number().default(2000),
   API_PORT: z.coerce.number().default(8787),
 });
 
