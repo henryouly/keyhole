@@ -198,7 +198,8 @@ export default function App() {
       <Audit />
       <p className="mt-6 text-xs text-neutral-500">
         Agent docs: <a className="underline" href="/skill.md">SKILL.md</a> ·{" "}
-        <a className="underline" href="/api/openapi.json">openapi.json</a>
+        <a className="underline" href="/api/openapi.json">openapi.json</a> ·{" "}
+        <a className="underline" href="/privacy.html">Privacy</a>
       </p>
     </main>
   );

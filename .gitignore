@@ -3,3 +3,5 @@ dist/
 .vercel/
 .env
 .env.local
+# Generated from root SKILL.md by web prebuild (single source of truth).
+web/public/skill.md

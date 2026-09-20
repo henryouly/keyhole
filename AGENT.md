@@ -40,6 +40,10 @@ Tailwind + shadcn/ui. TS strict, pnpm workspaces (`api/`, `web/`).
 - `api/src/schemas/` — Zod shared by tRPC + REST + OpenAPI
 - `api/src/services/providers/` — `DataProvider` implementations
 - `web/src/` — dashboard only; no Google tokens here ever.
+- Root `SKILL.md` is the agent skill source of truth; `web/public/skill.md`
+  is generated from it by web prebuild (never edit the copy).
+- `api/vercel-entry.ts` + `vercel.json` own prod routing/headers; onAPIError
+  errorURL and OAuth prod-gate live in `api/src/lib/`.
 
 ## Hard rules
 1. NEVER log/print `Authorization`, `access_token`, `refresh_token`, `DATA_ENCRYPTION_KEY`.

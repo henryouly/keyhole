@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keyhole — Privacy Policy</title>
+</head>
+<body style="font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem;">
+  <h1>Keyhole — Privacy Policy</h1>
+  <p>Keyhole is a single-user, self-hosted application. It connects the
+  operator's own Google account and re-exposes selected data to the operator's
+  personal AI agents through scoped API keys.</p>
+  <h2>Data collected</h2>
+  <ul>
+    <li>Google account email (admin login allowlist and connection display).</li>
+    <li>Google OAuth tokens for the Calendar scope, stored AES-256-GCM encrypted.
+    Tokens never leave the server and are never shown to agents.</li>
+    <li>Google Calendar data (calendars and events), proxied on demand. Keyhole
+    stores no calendar content except encrypted tokens and an audit log of API
+    calls (method, path, status, timing — no bodies).</li>
+  </ul>
+  <h2>Data sharing</h2>
+  <p>None. There are no third-party analytics, trackers, or other recipients.
+  Agents holding a scoped key can read/write calendar data within that key's
+  scopes until the key is revoked or expires.</p>
+  <h2>Retention and deletion</h2>
+  <p>Disconnecting Google deletes the stored tokens (a Google-side revocation is
+  also attempted). Revoking an API key disables it instantly. The audit log is
+  capped at 10,000 rows with oldest-first pruning.</p>
+  <h2>Contact</h2>
+  <p>Keyhole is operated by a single individual for personal use. Contact the
+  instance operator directly.</p>
+</body>
+</html>
