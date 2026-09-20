@@ -30,6 +30,8 @@ Tailwind + shadcn/ui. TS strict, pnpm workspaces (`api/`, `web/`).
   `curl localhost:8787/api/health` → `{"ok":true,...}`;
   key matrix via `curl -H "Authorization: Bearer kh_live_..." localhost:8787/api/v1/...`
   expecting 200 / 403 (wrong scope) / 401 (revoked/expired).
+- `api/` uses NodeNext resolution: relative imports need explicit `.js`
+  extensions (`./admin.js`), even though the source file is `.ts`.
 - Dashboard check: `pnpm --filter ./web dev`, open `:5173`, confirm health
   payload renders and no token/secret appears in Network tab or console.
 

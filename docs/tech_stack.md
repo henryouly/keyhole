@@ -48,3 +48,8 @@ ADMIN_EMAILS, APP_URL, TEST_CALENDAR_ID (dev/e2e only)
 ## Free-tier notes
 No Redis/cron — refresh lazily, prune audit on insert, no polling.
 Vercel Hobby timeouts: keep proxy handlers short, no long-poll.
+Migrations: `db:migrate` runs `api/src/db/migrate.ts` (neon-http/migrator over
+HTTPS) because drizzle-kit migrate/push take a WS driver path that fails here.
+No transactions in the HTTP migrator — a failed migration does not roll back.
+Local `.env` is loaded file-relatively in `api/src/lib/env.ts` (tsx has no
+auto .env loading); no-op on Vercel.
