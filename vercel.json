@@ -8,8 +8,11 @@
       "use": "@vercel/node"
     },
     {
-      "src": "web/dist/**",
-      "use": "@vercel/static"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "web/dist"
+      }
     }
   ],
   "routes": [
@@ -23,11 +26,11 @@
     },
     {
       "src": "/(skill\\.md|privacy\\.html|robots\\.txt)",
-      "dest": "/web/dist/$1"
+      "dest": "/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/web/dist/index.html"
+      "dest": "/index.html"
     }
   ],
   "headers": [
