@@ -25,7 +25,7 @@
       "dest": "/api/vercel-entry.ts"
     },
     {
-      "src": "/(skill\\.md|privacy\\.html|robots\\.txt)",
+      "src": "/(skill\\.md|privacy\\.html|robots\\.txt|assets/.*)",
       "dest": "/$1"
     },
     {
