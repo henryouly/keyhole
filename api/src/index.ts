@@ -11,7 +11,7 @@ import v1 from "./rest/v1.js";
 const app = new Hono();
 
 app.get("/api/health", (c) => {
-  return c.json({ ok: true, service: "keyhole-api", phase: 3 });
+  return c.json({ ok: true, service: "keyhole-api", phase: 4 });
 });
 
 // better-auth: login, callback, session, sign-out.

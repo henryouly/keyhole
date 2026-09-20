@@ -32,6 +32,21 @@ export function createTokenService(
   const SKEW_MS = opts?.skewMs ?? 60_000;
   const inflight = new Map<string, Promise<string>>();
 
+  async function doRefresh(
+    userId: string,
+    stored: StoredTokens,
+  ): Promise<string> {
+    const fresh = await refresher(decryptToken(stored.refreshEnc));
+    await store.save(userId, {
+      accessEnc: encryptToken(fresh.accessToken),
+      refreshEnc: fresh.refreshToken
+        ? encryptToken(fresh.refreshToken)
+        : stored.refreshEnc,
+      expiresAt: fresh.expiresAtMs ? new Date(fresh.expiresAtMs) : null,
+    });
+    return fresh.accessToken;
+  }
+
   async function getAccessToken(
     userId: string,
     nowMs: number = Date.now(),
@@ -43,17 +58,7 @@ export function createTokenService(
     }
     let pending = inflight.get(userId);
     if (!pending) {
-      pending = (async () => {
-        const fresh = await refresher(decryptToken(stored.refreshEnc));
-        await store.save(userId, {
-          accessEnc: encryptToken(fresh.accessToken),
-          refreshEnc: fresh.refreshToken
-            ? encryptToken(fresh.refreshToken)
-            : stored.refreshEnc,
-          expiresAt: fresh.expiresAtMs ? new Date(fresh.expiresAtMs) : null,
-        });
-        return fresh.accessToken;
-      })();
+      pending = doRefresh(userId, stored);
       inflight.set(userId, pending);
       // Clear on settle. Separate handlers (not .finally) so no stray
       // rejected promise is left unhandled.
@@ -65,5 +70,12 @@ export function createTokenService(
     return pending;
   }
 
-  return { getAccessToken };
+  /** Forced refresh (bypasses single-flight): used for retry-after-401. */
+  async function refreshNow(userId: string): Promise<string> {
+    const stored = await store.load(userId);
+    if (!stored) throw new Error("NOT_CONNECTED");
+    return doRefresh(userId, stored);
+  }
+
+  return { getAccessToken, refreshNow };
 }
