@@ -17,23 +17,66 @@ Tailwind + shadcn/ui. TS strict, pnpm workspaces (`api/`, `web/`).
 ## Testing
 
 - Layers (run in order): `pnpm typecheck` → `pnpm build` → `pnpm test` →
-  manual API check below. All four must pass before declaring a phase done.
-- `pnpm test` runs per-package suites. No runner is installed yet (scripts are
-  placeholders); when adding tests, use vitest per package
-  (`api/src/**/*.test.ts`, `web/src/**/*.test.ts`), `pnpm --filter ./api test`.
+  manual API check below. All four must pass before declaring work done.
+- api suite is vitest (`api/src/**/*.test.ts`, `pnpm --filter ./api test`);
+  `api/vitest.setup.ts` stubs test-only secrets + dummy DB (dotenv never
+  overrides setup env; dbAudit swallows the refused connection).
 - Unit-test services, not routers: scope gate (401/403/429 matrix), key hashing,
-  AES-GCM round-trip, idempotencyKey mapping, trash-unless-confirm.
-  Routers stay thin; one happy-path test per endpoint is enough.
+  AES-GCM round-trip, idempotencyKey mapping, trash-unless-confirm, token
+  single-flight + forced refresh, error mapping.
+- The openapi conformance test asserts every documented path answers 401
+  (not 404) unauthenticated — a route/spec drift fails the suite.
 - Never use real Google tokens or the primary calendar in tests. Unit tests use
-  fakes for `DataProvider`/token store. Live checks use `TEST_CALENDAR_ID` only.
+  fakes for backends/stores. Live checks use `TEST_CALENDAR_ID` only, via
+  throwaway `api/src/db/*.ts` scripts that mint-then-delete their own keys and
+  purge probe events; delete the scripts afterwards. Never commit test keys.
 - Manual API check (dev servers running):
   `curl localhost:8787/api/health` → `{"ok":true,...}`;
   key matrix via `curl -H "Authorization: Bearer kh_live_..." localhost:8787/api/v1/...`
   expecting 200 / 403 (wrong scope) / 401 (revoked/expired).
 - `api/` uses NodeNext resolution: relative imports need explicit `.js`
   extensions (`./admin.js`), even though the source file is `.ts`.
+- Hono typing: apps mounting agent middleware need `new Hono<AgentEnv>()`
+  or `c.get("agent")` types as `never`. tRPC queries are GET-only (POST → 405).
+  Middleware order is auth → scope → Zod validators, so unauthenticated calls
+  401 before any 400.
 - Dashboard check: `pnpm --filter ./web dev`, open `:5173`, confirm health
   payload renders and no token/secret appears in Network tab or console.
+
+## Gotchas (learned the hard way)
+
+- **Vercel entry must use named exports** (`export const GET/POST/...`), never a
+  default export: `@vercel/node` treats a default export as a Node `(req, res)`
+  handler and silently drops returned Responses — every request hangs to the
+  300s timeout. The runtime log says exactly this; trust it.
+- **Legacy `builds` skip the top-level buildCommand.** `web/dist/**` as a static
+  source matches nothing unless something builds it: use
+  `@vercel/static-build` on `package.json` (runs the root build, serves
+  `distDir`), not `@vercel/static` on a path you assume exists.
+- **SPA fallback swallows static assets.** Any `/(.*) → /index.html` route must
+  come after explicit passthroughs (`/assets/*`, `/skill.md`, …), or JS/CSS
+  return the HTML shell with 200 and the page renders blank.
+- **drizzle-kit migrate/push take the WS driver path** when
+  `@neondatabase/serverless` is installed, and fail here. `db:migrate` runs
+  `api/src/db/migrate.ts` (`neon-http/migrator` over HTTPS) instead.
+  No transactions there — a failed migration does not roll back.
+- **tsx never auto-loads `.env`.** `api/src/lib/env.ts` loads the repo-root
+  file explicitly (file-relative URL, no-op on Vercel). Without it, local dev
+  silently runs on defaults.
+- **googleapis v144 has no `events.trash` in typings.** Trash = PATCH
+  `{ status: "cancelled" }` (documented equivalent, restorable).
+- **Google reads lag writes.** Immediate get-after-delete can return the
+  `cancelled` tombstone with 200; listings exclude it at once, direct reads
+  404 shortly after. Tests/agents must not assert instant 404.
+- **Google OAuth redirect URIs are exact-match + slow.** `redirect_uri_mismatch`
+  is always a typo, wrong client (admin vs data), trailing slash, or
+  propagation delay (up to ~5 min). `APP_URL` itself must have no trailing slash.
+- **better-auth specifics:** user-create gate = `databaseHooks.user.create.before`
+  returning `false`; friendly failures need `onAPIError: { errorURL }`
+  (default is the raw `/api/auth/error` page); without `DATABASE_URL` the app
+  falls back to the memory adapter (dev/tests only).
+- **Base64 tamper tests:** flip a bit in the FIRST char, not the last — trailing
+  bits may be padding and decode to identical bytes (test passes vacuously).
 
 ## Structure
 - `api/src/{trpc/,rest/,services/,db/,lib/}` — routers thin, logic in `services/`

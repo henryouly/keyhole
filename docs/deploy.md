@@ -55,3 +55,27 @@ Run migrations once from local against the prod DB: `DATABASE_URL=<prod> pnpm db
 Dashboard → revoke key / disconnect Google (< 1 min effect).
 Leaked secret → rotate env + redeploy. Lost `DATA_ENCRYPTION_KEY` → reconnect Google.
 Secrets backed up in 1Password.
+
+## Troubleshooting (hit during first deploy)
+
+- **`/api/*` hangs, then `Vercel Runtime Timeout Error`, log warns
+  "default export returned a Response … returns are ignored":**
+  the function entry used a default export. `@vercel/node` only honors Web
+  Request/Response on **named** `GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS`
+  exports — see `api/vercel-entry.ts`.
+- **Static paths 404 instantly (`/`, `/robots.txt`) while the function works:**
+  `web/dist` was never built/uploaded. With legacy `builds`, the top-level
+  `buildCommand` is skipped — the `@vercel/static-build` entry is what runs
+  the root build. Confirm the build log actually ran `pnpm build`.
+- **Blank page, JS/CSS return 200 with HTML-sized bodies:** the SPA fallback
+  `/(.*) → /index.html` is swallowing `/assets/*`. Every static path needs an
+  explicit route **before** the fallback.
+- **`Error 400: redirect_uri_mismatch` on sign-in:** exact-match failure —
+  wrong client (admin vs data), typo, trailing slash in `APP_URL`, or Google
+  propagation delay (wait ~5 min). Checklist in chat history; verify against
+  the exact URI list in Cloud Console.
+- **tsc errors in the Vercel log but green locally:** the deployed install
+  resolved different packages than `pnpm-lock.yaml`. Check dashboard Install
+  Command / package manager and Node version before touching code.
+- **Reading runtime logs:** `vercel logs <deployment-url>` (needs `vercel login`).
+  Function timeouts appear as `Vercel Runtime Timeout Error` with the route.

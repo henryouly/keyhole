@@ -1,5 +1,8 @@
 # Keyhole — Roadmap
 
+> Status: Phases 0–6 shipped and deployed (`keyhole-two.vercel.app`).
+> Remaining: Phase 7 ideas below. This doc is now history; new work gets new plans.
+
 ## Phase 0 — Scaffold → verify: `pnpm build` passes
 `pnpm-workspace.yaml`, `api/` (Hono + tRPC + Zod + Drizzle), `web/` (Vite + React +
 Tailwind + shadcn), env template, `/api/health`.

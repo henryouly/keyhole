@@ -16,7 +16,7 @@ const app = new Hono();
 app.use(secureHeaders());
 
 app.get("/api/health", (c) => {
-  return c.json({ ok: true, service: "keyhole-api", phase: 5 });
+  return c.json({ ok: true, service: "keyhole-api", phase: 6 });
 });
 
 // better-auth: login, callback, session, sign-out.
