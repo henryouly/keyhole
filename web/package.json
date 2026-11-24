@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "cp ../SKILL.md public/skill.md",
     "dev": "vite",
     "prebuild": "cp ../SKILL.md public/skill.md",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
