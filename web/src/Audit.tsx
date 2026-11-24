@@ -32,7 +32,7 @@ export default function Audit() {
     <section className="mt-6 rounded border p-4">
       <div className="flex items-center gap-2">
         <h2 className="font-semibold">Recent agent calls</h2>
-        <button className="rounded border px-2 py-0.5 text-xs" onClick={refresh}>
+        <button type="button" className="rounded border px-2 py-0.5 text-xs" onClick={refresh}>
           Refresh
         </button>
       </div>
@@ -58,8 +58,11 @@ export default function Audit() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className="border-t font-mono">
+            {rows.map((r) => (
+              <tr
+                key={`${new Date(r.createdAt).getTime()}-${r.apiKeyPrefix ?? ""}-${r.method}-${r.path}-${r.status}-${r.ms ?? ""}`}
+                className="border-t font-mono"
+              >
                 <td className="py-1">
                   {new Date(r.createdAt).toLocaleTimeString()}
                 </td>

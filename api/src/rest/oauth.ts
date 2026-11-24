@@ -69,7 +69,7 @@ oauth.get("/google/callback", async (c) => {
   const userId = await adminUserId(c.req.raw);
   if (!userId) return denied("forbidden");
 
-  let tokens;
+  let tokens: Awaited<ReturnType<typeof exchangeCode>>;
   try {
     tokens = await exchangeCode(code);
   } catch (e) {
