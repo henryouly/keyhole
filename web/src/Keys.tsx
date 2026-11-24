@@ -87,6 +87,7 @@ export default function Keys() {
           </p>
           <code className="mt-1 block break-all bg-white p-2">{secret}</code>
           <button
+            type="button"
             className="mt-2 rounded border bg-white px-3 py-1"
             onClick={() => {
               void navigator.clipboard.writeText(secret);
@@ -135,6 +136,7 @@ export default function Keys() {
           />
         </label>
         <button
+          type="button"
           className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
           disabled={busy}
           onClick={create}
@@ -172,6 +174,7 @@ export default function Keys() {
                   <td>
                     {!k.revokedAt && (
                       <button
+                        type="button"
                         className="rounded border px-2 py-0.5"
                         disabled={busy}
                         onClick={() => revoke(k.id)}
