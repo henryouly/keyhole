@@ -1,8 +1,11 @@
 import dotenv from "dotenv";
 
 // File-relative so it resolves to the repo-root .env regardless of cwd.
-// No-op on Vercel (no .env file there; platform env applies instead).
-dotenv.config({ path: new URL("../../../.env", import.meta.url) });
+// Skipped under Vitest (unit tests must never depend on local .env) and
+// no-op on Vercel (no .env file there; platform env applies instead).
+if (!process.env.VITEST) {
+  dotenv.config({ path: new URL("../../../.env", import.meta.url) });
+}
 import { z } from "zod";
 
 const envSchema = z.object({

@@ -140,15 +140,14 @@ export function createKeyService(
   return { mint, verify, listKeys, revokeKey, dailyLimit: DAILY_LIMIT };
 }
 
-/** Production Drizzle-backed store. */
+/** Production Drizzle-backed store (resolves DB lazily so app can boot DB-less). */
 export function drizzleKeyStore(): KeyStore {
-  const db = getDb();
   return {
     insert: async (row) => {
-      await db.insert(apiKeys).values(row);
+      await getDb().insert(apiKeys).values(row);
     },
     findByHash: async (hash) => {
-      const rows = await db
+      const rows = await getDb()
         .select()
         .from(apiKeys)
         .where(eq(apiKeys.hash, hash))
@@ -156,13 +155,13 @@ export function drizzleKeyStore(): KeyStore {
       return rows[0] ?? null;
     },
     bumpUsage: async (id, count, window, usedAt) => {
-      await db
+      await getDb()
         .update(apiKeys)
         .set({ dailyCount: count, dailyWindow: window, lastUsedAt: usedAt })
         .where(eq(apiKeys.id, id));
     },
     revoke: async (userId, id) => {
-      const rows = await db
+      const rows = await getDb()
         .update(apiKeys)
         .set({ revokedAt: new Date() })
         .where(eq(apiKeys.id, id))
@@ -171,7 +170,7 @@ export function drizzleKeyStore(): KeyStore {
       return hit !== undefined;
     },
     list: async (userId) => {
-      return db.select().from(apiKeys).where(eq(apiKeys.userId, userId));
+      return getDb().select().from(apiKeys).where(eq(apiKeys.userId, userId));
     },
   };
 }
