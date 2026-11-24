@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import app from "../index.js";
 import v1 from "./v1.js";
 import { buildOpenApi } from "./openapi.js";
 
@@ -29,15 +30,38 @@ describe("openapi document", () => {
 });
 
 describe("spec↔routes conformance", () => {
-  it("every documented route+method answers 401 (not 404) unauthenticated", async () => {
+  it("documented routes+methods match registered v1 routes bidirectionally", () => {
+    const documented = new Set<string>();
+    for (const [path, methods] of Object.entries(doc.paths)) {
+      const honoPath = path.replace(/\{([^}]+)\}/g, ":$1");
+      for (const method of Object.keys(methods)) {
+        documented.add(`${method.toUpperCase()} ${honoPath}`);
+      }
+    }
+
+    const registered = new Set(
+      v1.routes
+        .filter((r) => r.method !== "ALL")
+        .map((r) => `${r.method.toUpperCase()} ${r.path}`),
+    );
+
+    expect([...registered].sort()).toEqual([...documented].sort());
+  });
+
+  it("every documented route+method on mounted app answers 401 unauthenticated", async () => {
     for (const [path, methods] of Object.entries(doc.paths)) {
       const concrete = `/api/v1${path}`
         .replace("{calendarId}", "x")
         .replace("{eventId}", "x");
       for (const method of Object.keys(methods)) {
-        const res = await v1.request(concrete, { method });
-        expect(res.status, `${method} ${concrete}`).toBe(401);
+        const upper = method.toUpperCase();
+        const res = await app.request(concrete, { method: upper });
+        expect(res.status, `${upper} ${concrete}`).toBe(401);
       }
     }
+
+    // Sanity check: mounted app itself does not blanket-401 unknown paths.
+    const unknown = await app.request("/api/does-not-exist", { method: "GET" });
+    expect(unknown.status).toBe(404);
   });
 });
