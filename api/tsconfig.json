@@ -2,8 +2,14 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "vercel-entry.ts",
+    "drizzle.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts"
+  ]
 }

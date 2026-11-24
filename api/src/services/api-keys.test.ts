@@ -137,4 +137,17 @@ describe("key verification", () => {
       (await svc.verify(fullKey, Date.UTC(2026, 0, 2, 0, 0, 1))).ok,
     ).toBe(true);
   });
+
+  it("drizzleKeyStore constructs lazily without DATABASE_URL", async () => {
+    const prev = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = "";
+    try {
+      const { vi } = await import("vitest");
+      vi.resetModules();
+      const mod = await import("./api-keys.js");
+      expect(() => mod.drizzleKeyStore()).not.toThrow();
+    } finally {
+      process.env.DATABASE_URL = prev;
+    }
+  });
 });
