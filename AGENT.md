@@ -85,6 +85,9 @@ Tailwind + shadcn/ui. TS strict, pnpm workspaces (`api/`, `web/`).
 - `web/src/` — dashboard only; no Google tokens here ever.
 - Root `SKILL.md` is the agent skill source of truth; `web/public/skill.md`
   is generated from it by web prebuild (never edit the copy).
+- `.agents/skills/` — contributor/workflow skills for coding agents (`arena`,
+  `interrogate`, `tdd`, `in-your-own-words`, `create-verification-skill`,
+  `maintain-verification-skill`); distinct from root `SKILL.md`.
 - `api/vercel-entry.ts` + `vercel.json` own prod routing/headers; onAPIError
   errorURL and OAuth prod-gate live in `api/src/lib/`.
 
