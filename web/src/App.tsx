@@ -96,6 +96,7 @@ function ConnectCard() {
             Connected{status.accountEmail ? ` as ${status.accountEmail}` : ""}.
           </p>
           <button
+            type="button"
             className="mt-2 rounded border px-4 py-2 text-sm disabled:opacity-50"
             disabled={busy}
             onClick={disconnect}
@@ -150,6 +151,7 @@ export default function App() {
           </p>
         )}
         <button
+          type="button"
           className="mt-4 rounded bg-black px-4 py-2 text-sm text-white"
           onClick={() => signIn.social({ provider: "google" })}
         >
@@ -177,6 +179,7 @@ export default function App() {
       )}
       <div className="mt-4 flex gap-2">
         <button
+          type="button"
           className="rounded border px-4 py-2 text-sm"
           onClick={() => signOut()}
         >
