@@ -6,4 +6,8 @@
 process.env.DATA_ENCRYPTION_KEY =
   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 process.env.ADMIN_EMAILS = "admin@example.com";
-process.env.DATABASE_URL ??= "postgresql://test:test@localhost:1/test";
+process.env.DATABASE_URL = "postgresql://test:test@localhost:1/test";
+process.env.AUTH_SECRET = "test-auth-secret-32-bytes-minimum!!";
+process.env.APP_URL = "http://localhost:8787";
+process.env.PROD_APP_URL = "";
+process.env.API_KEY_DAILY_LIMIT = "2000";
