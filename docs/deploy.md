@@ -42,6 +42,19 @@ OAuth is code-gated: any non-localhost `APP_URL` != `PROD_APP_URL` (i.e. all
 preview deploys) gets `?error=oauth_disabled`. No separate preview setup needed.
 Run migrations once from local against the prod DB: `DATABASE_URL=<prod> pnpm db:migrate`.
 
+### CI-driven deploys (GitHub Actions)
+Automatic per-branch Vercel Git deployments are disabled (`vercel.json` sets
+`"git": { "deploymentEnabled": false }`) to avoid hitting Vercel Hobby's branch
+deployment limit. Instead, `.github/workflows/ci.yml` deploys via Vercel CLI
+after `verify` passes:
+- Pull requests → Preview (`vercel deploy --prebuilt`)
+- Push to `main` → Production (`vercel deploy --prebuilt --prod`)
+
+Add these 3 GitHub repository secrets (**Settings → Secrets and variables → Actions**):
+- `VERCEL_TOKEN` — Vercel Access Token (account Settings → Tokens)
+- `VERCEL_ORG_ID` — Vercel team/org ID (from `.vercel/project.json` after `vercel link`)
+- `VERCEL_PROJECT_ID` — Vercel project ID (from `.vercel/project.json` after `vercel link`)
+
 ## 4. Verify
 1. `/` → Google login; non-allowlisted blocked.
 2. Dashboard → Connect Calendar → Connected.
